@@ -19,6 +19,10 @@ object DiscordUtil {
 
     private fun sendMessage(str: String) {
         val url = config.webhook
+        if (url.isEmpty()){
+            logger.log("Webhook URL is empty, cannot send message")
+            return
+        }
         val client = OkHttpClient()
         val msg = mapOf("content" to str)
         val json = gson.toJson(msg)
