@@ -73,7 +73,7 @@ dependencies {
 
     shadowImpl(libs.libautoupdate)
     shadowImpl("org.jetbrains.kotlin:kotlin-reflect:1.9.0")
-    implementation("com.squareup.okhttp3:okhttp:4.9.3")
+    shadowImpl("com.squareup.okhttp3:okhttp:4.9.3")
 }
 
 // Minecraft configuration:
