@@ -13,7 +13,7 @@ plugins {
 // Constants:
 
 group = "be.hize"
-version = "1.0.1"
+version = "1.0.2"
 
 // Toolchains:
 java {
