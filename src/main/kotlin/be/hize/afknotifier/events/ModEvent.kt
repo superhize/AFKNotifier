@@ -14,5 +14,5 @@ open class ModEvent : Event() {
         }.onFailure {
         }.getOrDefault(isCanceled)
 
-    private fun postWithoutCatch() = MinecraftForge.EVENT_BUS.post(this)
+    fun postWithoutCatch() = MinecraftForge.EVENT_BUS.post(this)
 }

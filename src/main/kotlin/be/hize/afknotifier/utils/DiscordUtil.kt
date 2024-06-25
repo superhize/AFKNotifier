@@ -17,10 +17,15 @@ object DiscordUtil {
         sendMessage("This is a test. (It worked)")
     }
 
-    private fun sendMessage(str: String) {
+    private fun sendMessage(str: String, isTest: Boolean = false) {
         val url = config.webhook
-        if (url.isEmpty()){
+        if (url.isEmpty()) {
             logger.log("Webhook URL is empty, cannot send message")
+            if (isTest){
+                showPlayerMessage {
+                    text("Webhook URL is empty. :(")
+                }
+            }
             return
         }
         val client = OkHttpClient()
@@ -37,18 +42,28 @@ object DiscordUtil {
             if (!response.isSuccessful) {
                 logger.log("Error sending message to webhook. Code: ${response.code}")
                 logger.log("Message: ${response.body?.string()}")
+                if (isTest){
+                    showPlayerMessage(MessageMode.ERROR) {
+                        text("Error sending the message, check if your webhook is valid.")
+                    }
+                }
             } else {
                 logger.log("Message sent to webhook.")
+                if (isTest){
+                    showPlayerMessage {
+                        text("Message sent!")
+                    }
+                }
             }
         }
     }
 
-    fun sendAfkWarning(users: String?) {
+    fun sendAfkWarning(msg: String, users: String?) {
         val username = Minecraft.getMinecraft().session.username
         val usersList = users ?: "Invalid users tag list."
         val message = """
             $usersList
-            ${config.messageToSend.replace("%%user%%", username)}
+            ${msg.replace("%%user%%", username)}
         """.trimIndent()
         sendMessage(message)
     }

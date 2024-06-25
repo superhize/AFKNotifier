@@ -1,10 +1,15 @@
 package be.hize.afknotifier.utils
 
+import be.hize.afknotifier.data.IslandType
+import be.hize.afknotifier.data.TabListData
 import be.hize.afknotifier.events.HypixelJoinEvent
+import be.hize.afknotifier.events.IslandChangeEvent
 import be.hize.afknotifier.events.ModTickEvent
 import be.hize.afknotifier.events.ScoreboardUpdateEvent
 import be.hize.afknotifier.events.SkyblockJoinEvent
+import be.hize.afknotifier.events.TabListUpdateEvent
 import be.hize.afknotifier.events.WorldChangeEvent
+import be.hize.afknotifier.utils.RegexUtil.matchFirst
 import be.hize.afknotifier.utils.StringUtils.removeColor
 import net.minecraft.client.Minecraft
 import net.minecraftforge.fml.common.eventhandler.EventPriority
@@ -12,8 +17,7 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 import net.minecraftforge.fml.common.network.FMLNetworkEvent
 
 object HypixelUtils {
-    private val jsonBracketPattern = "^\\{.+}".toPattern()
-    private val lobbyTypePattern = "(?<lobbyType>.*lobby)\\d+".toPattern()
+    private val islandNamePattern = "(?:§.)*(Area|Dungeon): (?:§.)*(?<island>.*)".toPattern()
 
     private var hypixelMain = false
     private var hypixelAlpha = false
@@ -21,6 +25,7 @@ object HypixelUtils {
 
     val onHypixel get() = (hypixelMain || hypixelAlpha) && Minecraft.getMinecraft().thePlayer != null
     val inSkyblock get() = skyblock && onHypixel
+    var skyblockIsland = IslandType.UNKNOWN
 
     @SubscribeEvent
     fun onDisconnect(event: FMLNetworkEvent.ClientDisconnectionFromServerEvent) {
@@ -70,5 +75,24 @@ object HypixelUtils {
             }
         }
         if (!onHypixel) return
+    }
+
+    @SubscribeEvent
+    fun onTabListUpdate(event: TabListUpdateEvent) {
+        checkIsland(event)
+    }
+
+    private fun checkIsland(event: TabListUpdateEvent) {
+        var foundIsland = ""
+
+        TabListData.getTabList().matchFirst(islandNamePattern) {
+            foundIsland = group("island").removeColor()
+        }
+
+        val islandType = IslandType.getByNameOrUnknown(foundIsland)
+        if (skyblockIsland != islandType) {
+            IslandChangeEvent(islandType, skyblockIsland).postAndCatch()
+            skyblockIsland = islandType
+        }
     }
 }

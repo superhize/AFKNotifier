@@ -7,6 +7,7 @@ import be.hize.afknotifier.data.Commands
 import be.hize.afknotifier.data.FixedRateTimerManager
 import be.hize.afknotifier.data.MinecraftData
 import be.hize.afknotifier.data.ScoreboardData
+import be.hize.afknotifier.data.TabListData
 import be.hize.afknotifier.events.ModTickEvent
 import be.hize.afknotifier.features.Notifier
 import be.hize.afknotifier.features.update.AutoUpdate
@@ -41,6 +42,7 @@ class AFKNotifier {
         loadModule(HypixelUtils)
         loadModule(MinecraftData())
         loadModule(ScoreboardData)
+        loadModule(TabListData)
         loadModule(Notifier)
         loadModule(FixedRateTimerManager)
 

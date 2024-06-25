@@ -14,6 +14,7 @@ plugins {
 
 group = "be.hize"
 version = "1.0.0"
+val modid = "afknotifier"
 
 // Toolchains:
 java {

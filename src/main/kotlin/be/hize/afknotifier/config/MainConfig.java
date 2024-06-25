@@ -1,9 +1,11 @@
 package be.hize.afknotifier.config;
 
+import be.hize.afknotifier.data.IslandType;
 import be.hize.afknotifier.utils.DiscordUtil;
 import com.google.gson.annotations.Expose;
 import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorBoolean;
 import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorButton;
+import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorDropdown;
 import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorSlider;
 import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorText;
 import io.github.notenoughupdates.moulconfig.annotations.ConfigOption;
@@ -17,9 +19,25 @@ public class MainConfig {
     public boolean enabled = true;
 
     @Expose
-    @ConfigOption(name = "Message", desc = "What message to send")
+    @ConfigOption(name = "Island Change", desc = "Send the message when you leave defined island.")
+
+    @ConfigEditorBoolean
+    public boolean onIslandChange = true;
+
+    @Expose
+    @ConfigOption(name = "Island", desc = "The island.")
+    @ConfigEditorDropdown
+    public IslandType islandType = IslandType.PRIVATE_ISLAND;
+
+    @Expose
+    @ConfigOption(name = "Lobby Message", desc = "Message to sent when send to the lobby.")
     @ConfigEditorText
-    public String messageToSend = "%%user%% is no longer on skyblock!";
+    public String lobbyMessage = "%%user%% is no longer on skyblock!";
+
+    @Expose
+    @ConfigOption(name = "IS Leave Message", desc = "Message to sent when you leave your private island.")
+    @ConfigEditorText
+    public String islandLeaveMessage = "%%user%% just left private island!";
 
     @Expose
     @ConfigOption(name = "Webhook", desc = "The Webhook to send the message to.")
@@ -39,6 +57,6 @@ public class MainConfig {
 
     @Expose
     @ConfigOption(name = "Retry", desc = "Number of time you want to retry checking if you are still on skyblock before sending the message.")
-    @ConfigEditorSlider(minValue = 1, maxValue = 10, minStep = 1)
+    @ConfigEditorSlider(minValue = 5, maxValue = 10, minStep = 1)
     public int retryValue = 10;
 }
