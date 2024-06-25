@@ -2,6 +2,7 @@ package be.hize.afknotifier.data
 
 import be.hize.afknotifier.config.core.ConfigGuiManager
 import be.hize.afknotifier.features.update.AutoUpdate
+import be.hize.afknotifier.utils.CommandActionRegistry
 import net.minecraft.command.ICommandSender
 import net.minecraftforge.client.ClientCommandHandler
 
@@ -28,6 +29,7 @@ object Commands {
         function: (Array<String>) -> Unit,
     ) {
         ClientCommandHandler.instance.registerCommand(SimpleCommand(name, createCommand(function)))
+        ClientCommandHandler.instance.registerCommand(CommandActionRegistry)
     }
 
     private fun createCommand(function: (Array<String>) -> Unit) =

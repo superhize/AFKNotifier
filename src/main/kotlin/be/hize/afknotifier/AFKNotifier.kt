@@ -9,6 +9,7 @@ import be.hize.afknotifier.data.MinecraftData
 import be.hize.afknotifier.data.ScoreboardData
 import be.hize.afknotifier.events.ModTickEvent
 import be.hize.afknotifier.features.Notifier
+import be.hize.afknotifier.features.update.AutoUpdate
 import be.hize.afknotifier.utils.HypixelUtils
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
@@ -57,7 +58,7 @@ class AFKNotifier {
             },
         )
 
-        // loadModule(AutoUpdate)
+        loadModule(AutoUpdate)
     }
 
     private fun loadModule(obj: Any) {

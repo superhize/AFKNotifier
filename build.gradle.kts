@@ -7,12 +7,13 @@ plugins {
     id("dev.architectury.architectury-pack200") version "0.1.3"
     id("com.github.johnrengelman.shadow") version "8.1.1"
     kotlin("jvm") version "1.9.0"
+    `maven-publish`
 }
 
 // Constants:
 
-group = "be.hize.afknotifier"
-version = "1.0"
+group = "be.hize"
+version = "1.0.0"
 
 // Toolchains:
 java {
@@ -118,9 +119,14 @@ tasks.withType(Jar::class) {
 }
 
 tasks.processResources {
-    inputs.property("version", project.version)
+    inputs.property("version", version)
     inputs.property("mcversion", "1.8.9")
     inputs.property("modid", "AFKNotifier")
+
+    filesMatching(listOf("mcmod.info")) {
+        expand(inputs.properties)
+        expand("version" to version)
+    }
 
     rename("(.+_at.cfg)", "META-INF/$1")
 }
@@ -162,4 +168,34 @@ tasks.assemble.get().dependsOn(tasks.remapJar)
 val compileKotlin: KotlinCompile by tasks
 compileKotlin.kotlinOptions {
     jvmTarget = "1.8"
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("maven") {
+            artifact(tasks.remapJar) {
+                classifier = ""
+            }
+            artifact(tasks.jar) {
+                classifier = "named"
+            }
+            pom {
+                name.set(project.name)
+                description.set("Notify you when you go AFK.")
+                licenses {
+                    license {
+                        name.set("GPL-3.0-or-later")
+                    }
+                }
+                developers {
+                    developer {
+                        name.set("HiZe")
+                    }
+                }
+                scm {
+                    url.set("https://github.com/superhize/AFKNotifier")
+                }
+            }
+        }
+    }
 }

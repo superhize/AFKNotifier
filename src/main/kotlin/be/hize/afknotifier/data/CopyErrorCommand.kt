@@ -20,7 +20,7 @@ object CopyErrorCommand {
     fun command(array: Array<String>) {
         if (array.size != 1) {
             showPlayerMessage {
-                text("§cUse /excopyerror <error id> or just click on the error in chat!")
+                text("§cUse /afkcoppyerror <error id> or just click on the error in chat!")
             }
             return
         }

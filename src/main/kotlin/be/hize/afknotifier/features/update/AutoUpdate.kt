@@ -14,7 +14,7 @@ import java.util.concurrent.CompletableFuture
 object AutoUpdate {
     val updater =
         UpdateContext(
-            UpdateSource.githubUpdateSource("superhize", "AFKNotifier"),
+            UpdateSource.mavenSource("https://repo.hize.be/releases", "be.hize", "afknotifier"),
             UpdateTarget.deleteAndSaveInTheSameFolder(AutoUpdate::class.java),
             SemanticVersion.fromString(AFKNotifier.version)!!,
             AFKNotifier.MODID,
