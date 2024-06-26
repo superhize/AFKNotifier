@@ -20,9 +20,13 @@ public class MainConfig {
 
     @Expose
     @ConfigOption(name = "Island Change", desc = "Send the message when you leave defined island.")
-
     @ConfigEditorBoolean
     public boolean onIslandChange = true;
+
+    @Expose
+    @ConfigOption(name = "On Disconnect", desc = "Send the message when you disconnect from the server.")
+    @ConfigEditorBoolean
+    public boolean onDisconnect = true;
 
     @Expose
     @ConfigOption(name = "Island", desc = "The island.")

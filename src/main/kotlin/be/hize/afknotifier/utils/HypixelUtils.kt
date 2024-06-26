@@ -1,6 +1,7 @@
 package be.hize.afknotifier.utils
 
 import be.hize.afknotifier.data.IslandType
+import be.hize.afknotifier.data.ScoreboardData
 import be.hize.afknotifier.data.TabListData
 import be.hize.afknotifier.events.HypixelJoinEvent
 import be.hize.afknotifier.events.IslandChangeEvent
@@ -10,6 +11,7 @@ import be.hize.afknotifier.events.SkyblockJoinEvent
 import be.hize.afknotifier.events.TabListUpdateEvent
 import be.hize.afknotifier.events.WorldChangeEvent
 import be.hize.afknotifier.utils.RegexUtil.matchFirst
+import be.hize.afknotifier.utils.RegexUtil.matches
 import be.hize.afknotifier.utils.StringUtils.removeColor
 import net.minecraft.client.Minecraft
 import net.minecraftforge.fml.common.eventhandler.EventPriority
@@ -18,6 +20,7 @@ import net.minecraftforge.fml.common.network.FMLNetworkEvent
 
 object HypixelUtils {
     private val islandNamePattern = "(?:§.)*(Area|Dungeon): (?:§.)*(?<island>.*)".toPattern()
+    private val guestPattern = "SKYBLOCK GUEST".toPattern()
 
     private var hypixelMain = false
     private var hypixelAlpha = false
@@ -89,10 +92,20 @@ object HypixelUtils {
             foundIsland = group("island").removeColor()
         }
 
-        val islandType = IslandType.getByNameOrUnknown(foundIsland)
+        val guest = guestPattern.matches(ScoreboardData.objectiveTitle.removeColor())
+        val islandType = getIslandType(foundIsland, guest)
         if (skyblockIsland != islandType) {
             IslandChangeEvent(islandType, skyblockIsland).postAndCatch()
             skyblockIsland = islandType
         }
+    }
+
+    private fun getIslandType(name: String, guesting: Boolean): IslandType {
+        val islandType = IslandType.getByNameOrUnknown(name)
+        if (guesting) {
+            if (islandType == IslandType.PRIVATE_ISLAND) return IslandType.PRIVATE_ISLAND_GUEST
+            if (islandType == IslandType.GARDEN) return IslandType.GARDEN_GUEST
+        }
+        return islandType
     }
 }

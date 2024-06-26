@@ -10,4 +10,6 @@ object RegexUtil {
         }
         return null
     }
+
+    fun Pattern.matches(string: String?): Boolean = string?.let { matcher(it).matches() } ?: false
 }

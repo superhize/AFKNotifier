@@ -1,16 +1,19 @@
 package be.hize.afknotifier.features
 
 import be.hize.afknotifier.AFKNotifier
-import be.hize.afknotifier.data.IslandType
 import be.hize.afknotifier.events.IslandChangeEvent
 import be.hize.afknotifier.events.SecondPassedEvent
 import be.hize.afknotifier.events.SkyblockJoinEvent
+import be.hize.afknotifier.utils.DelayedRun
 import be.hize.afknotifier.utils.DiscordUtil
 import be.hize.afknotifier.utils.HypixelUtils
 import be.hize.afknotifier.utils.Logger
 import be.hize.afknotifier.utils.SimpleTimeMark
+import kotlinx.coroutines.launch
 import net.minecraft.client.Minecraft
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
+import net.minecraftforge.fml.common.network.FMLNetworkEvent.ClientConnectedToServerEvent
+import net.minecraftforge.fml.common.network.FMLNetworkEvent.ClientDisconnectionFromServerEvent
 import kotlin.time.Duration.Companion.seconds
 
 object Notifier {
@@ -22,11 +25,14 @@ object Notifier {
     private var islandMessageSent = false
     private var check = false
     private var isCheck = false
+    private var connected = false
+    private var disconnected = false
     private var lastIslandChange = SimpleTimeMark.farPast()
 
     @SubscribeEvent
     fun onSecondPassed(event: SecondPassedEvent) {
         if (!isEnabled()) return
+        if (!config.enabled) return
         if (HypixelUtils.inSkyblock) return
         if (messageSent) return
         if (!check) return
@@ -52,13 +58,39 @@ object Notifier {
     }
 
     @SubscribeEvent
+    fun onDisconnect(event: ClientDisconnectionFromServerEvent) {
+        if (!config.onDisconnect) return
+        disconnected = true
+        connected = false
+        AFKNotifier.coroutineScope.launch {
+            DelayedRun.runDelayed(5.seconds) {
+                println(connected)
+                if (!connected) {
+                    val users = validateUserList(config.userTagList.get())
+                    DiscordUtil.sendAfkWarning("%%user%% has disconnected.", users)
+                    logger.log("You have disconnected, sent the message to discord.")
+                }
+            }
+        }
+
+    }
+
+    @SubscribeEvent
+    fun onConnect(event: ClientConnectedToServerEvent) {
+        if (!config.onDisconnect) return
+        println("connect")
+        connected = true
+        disconnected = false
+    }
+
+    @SubscribeEvent
     fun onIslandChange(event: IslandChangeEvent) {
         if (!isEnabled()) return
-
+        if (!config.onIslandChange) return
         lastIslandChange = SimpleTimeMark.now()
         tryNumber = 0
 
-        if (event.newIsland == IslandType.PRIVATE_ISLAND) {
+        if (event.newIsland == config.islandType) {
             isCheck = true
             islandMessageSent = false
         }
@@ -83,5 +115,5 @@ object Notifier {
         return list.joinToString(" ") { user -> "<@$user>" }
     }
 
-    private fun isEnabled() = Minecraft.getMinecraft().theWorld != null && config.enabled
+    private fun isEnabled() = Minecraft.getMinecraft().theWorld != null
 }

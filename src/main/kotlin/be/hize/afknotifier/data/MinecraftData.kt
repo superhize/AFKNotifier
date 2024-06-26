@@ -2,6 +2,7 @@ package be.hize.afknotifier.data
 
 import be.hize.afknotifier.events.ModTickEvent
 import be.hize.afknotifier.events.WorldChangeEvent
+import be.hize.afknotifier.utils.DelayedRun
 import net.minecraft.client.Minecraft
 import net.minecraftforge.event.world.WorldEvent
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
@@ -12,6 +13,8 @@ class MinecraftData {
 
     @SubscribeEvent
     fun onTick(event: TickEvent.ClientTickEvent) {
+        DelayedRun.checkRuns()
+
         Minecraft.getMinecraft().thePlayer ?: return
         tick++
         ModTickEvent(tick).postAndCatch()
