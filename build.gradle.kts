@@ -153,9 +153,9 @@ tasks.shadowJar {
         }
     }
     exclude("META-INF/versions/**")
-
+    mergeServiceFiles()
     // If you want to include other dependencies and shadow them, you can relocate them in here
-    relocate("io.github.moulberry.moulconfig", "be.hize.afknotifier.deps.moulconfig")
+    relocate("io.github.notenoughupdates.moulconfig", "be.hize.afknotifier.deps.moulconfig")
     relocate("moe.nea.libautoupdate", "be.hize.afknotifier.deps.libautoupdate")
 }
 
