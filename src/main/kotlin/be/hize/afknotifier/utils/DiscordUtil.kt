@@ -1,73 +1,95 @@
 package be.hize.afknotifier.utils
 
 import be.hize.afknotifier.AFKNotifier
-import be.hize.afknotifier.config.core.ConfigManager.gson
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import net.minecraft.client.Minecraft
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.RequestBody.Companion.toRequestBody
+import org.apache.http.client.config.RequestConfig
+import org.apache.http.client.entity.UrlEncodedFormEntity
+import org.apache.http.client.methods.HttpPost
+import org.apache.http.impl.client.HttpClientBuilder
+import org.apache.http.impl.client.HttpClients
+import org.apache.http.message.BasicHeader
+import org.apache.http.message.BasicNameValuePair
+import java.nio.charset.StandardCharsets
+import java.util.concurrent.CompletableFuture
 
 object DiscordUtil {
     private val logger = Logger("discord_webhook")
     private val config get() = AFKNotifier.feature.main
+    private val builder: HttpClientBuilder =
+        HttpClients.custom().setUserAgent("AFKNotifier/${AFKNotifier.version}")
+            .setDefaultHeaders(
+                mutableListOf(
+                    BasicHeader("Pragma", "no-cache"),
+                    BasicHeader("Cache-Control", "no-cache"),
+                ),
+            )
+            .setDefaultRequestConfig(
+                RequestConfig.custom()
+                    .build(),
+            )
+            .useSystemProperties()
+
 
     @JvmStatic
     fun sendTestMessage() {
-        sendMessage("This is a test. (It worked)", true)
+        sendDiscordMessage("This is a test. (It worked)", true)
     }
 
-    private fun sendMessage(str: String, isTest: Boolean = false) {
-        val url = config.webhook
-        if (url.isEmpty()) {
-            logger.log("Webhook URL is empty, cannot send message")
-            if (isTest) {
-                showPlayerMessage {
-                    text("Webhook URL is empty. :(")
+    private fun sendDiscordMessage(content: String, isTest: Boolean = false): CompletableFuture<*> {
+        return CompletableFuture.supplyAsync {
+            val client = builder.build()
+            try {
+                val post = HttpPost(config.webhook)
+                val params = ArrayList<BasicNameValuePair>()
+                params.add(BasicNameValuePair("content", content))
+                post.entity = UrlEncodedFormEntity(params, StandardCharsets.UTF_8)
+                val response = client.execute(post)
+                val entity = response.entity
+                if (entity == null) {
+                    logger.log("Message sent to webhook.")
+                    if (isTest) {
+                        showPlayerMessage {
+                            text("Message sent!")
+                        }
+                    }
+                    response.close()
+                    return@supplyAsync
+                } else {
+                    logger.log("Something wrong, but i don't know what..")
+                    if (isTest) {
+                        showPlayerMessage {
+                            text("Something wrong, but i don't know what..")
+                        }
+                    }
+                    response.close()
+                    return@supplyAsync
                 }
-            }
-            return
-        }
-        val client = OkHttpClient()
-        val msg = mapOf("content" to str)
-        val json = gson.toJson(msg)
-
-        val body = json.toRequestBody("application/json; charset=utf-8".toMediaTypeOrNull())
-        val request = Request.Builder()
-            .url(url)
-            .post(body)
-            .build()
-
-        client.newCall(request).execute().use { response ->
-            if (!response.isSuccessful) {
-                logger.log("Error sending message to webhook. Code: ${response.code}")
-                logger.log("Message: ${response.body?.string()}")
+            } catch (ex: Exception) {
+                logger.log("An error occurred while trying to send the message.")
+                logger.log("Error: ${ex.message}")
                 if (isTest) {
                     showPlayerMessage(MessageMode.ERROR) {
-                        text("Error sending the message, check if your webhook is valid.")
+                        text("Error sending the message, please check your log for more details.")
                     }
                 }
-            } else {
-                logger.log("Message sent to webhook.")
-                if (isTest) {
-                    showPlayerMessage {
-                        text("Message sent!")
-                    }
-                }
+                return@supplyAsync
+            } finally {
+                client.close()
             }
         }
     }
 
     fun sendAfkWarning(msg: String, users: String?) {
-        AFKNotifier.coroutineScope.launch {
+        AFKNotifier.coroutineScope.launch(Dispatchers.IO) {
             val username = Minecraft.getMinecraft().session.username
             val usersList = users ?: "Invalid users tag list."
             val message = """
             $usersList
             ${msg.replace("%%user%%", username)}
             """.trimIndent()
-            sendMessage(message)
+            sendDiscordMessage(message)
         }
     }
 }

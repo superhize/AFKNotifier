@@ -14,7 +14,6 @@ plugins {
 
 group = "be.hize"
 version = "1.0.4"
-val modid = "afknotifier"
 
 // Toolchains:
 java {
@@ -73,7 +72,6 @@ dependencies {
 
     shadowImpl(libs.libautoupdate)
     shadowImpl("org.jetbrains.kotlin:kotlin-reflect:1.9.0")
-    shadowImpl("com.squareup.okhttp3:okhttp:4.9.3")
 }
 
 // Minecraft configuration:
