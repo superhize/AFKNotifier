@@ -13,7 +13,7 @@ plugins {
 // Constants:
 
 group = "be.hize"
-version = "1.0.2"
+version = "1.0.3"
 val modid = "afknotifier"
 
 // Toolchains:
