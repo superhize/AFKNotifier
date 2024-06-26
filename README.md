@@ -7,6 +7,8 @@
 
 Commands to open config:`/afk`, `/afkn`, `afknotifier`
 
+Get notified via a discord webhook either when you disconnect, leave a defined island or go to the lobby.
+
 ## License
 
 This project is currently licensed under LGPL-3.0, see [LICENSE](LICENSE.md) for more details.
