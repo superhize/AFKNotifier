@@ -1,6 +1,7 @@
 package be.hize.afknotifier.data
 
 import be.hize.afknotifier.config.core.ConfigGuiManager
+import be.hize.afknotifier.features.Notifier
 import be.hize.afknotifier.features.update.AutoUpdate
 import be.hize.afknotifier.utils.CommandActionRegistry
 import net.minecraft.command.ICommandSender
@@ -20,6 +21,9 @@ object Commands {
         registerCommand("afknotifier", openConfig)
         registerCommand("afkn", openConfig)
         registerCommand("afkupdate") { AutoUpdate.onCommand() }
+        registerCommand("afkfakemessage") {
+            Notifier.sendFakeMessage(it)
+        }
 
         registerCommand("afkcopyerror") { CopyErrorCommand.command(it) }
     }

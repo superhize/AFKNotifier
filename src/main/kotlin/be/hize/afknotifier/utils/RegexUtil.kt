@@ -12,4 +12,7 @@ object RegexUtil {
     }
 
     fun Pattern.matches(string: String?): Boolean = string?.let { matcher(it).matches() } ?: false
+
+    inline fun <T> Pattern.matchMatcher(text: String, consumer: Matcher.() -> T) =
+        matcher(text).let { if (it.matches()) consumer(it) else null }
 }

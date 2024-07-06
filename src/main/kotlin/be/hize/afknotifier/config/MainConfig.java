@@ -24,6 +24,16 @@ public class MainConfig {
     public boolean onIslandChange = true;
 
     @Expose
+    @ConfigOption(name = "Lobby Restart", desc = "Only send the message when the island change is caused by a lobby restart.\n(Scheduled reboot or Game Update)")
+    @ConfigEditorBoolean
+    public boolean onlyOnLobbyRestart = false;
+
+    @Expose
+    @ConfigOption(name = "Message When Restart", desc = "Send a message when a server restart will happen.")
+    @ConfigEditorBoolean
+    public boolean messageWhenRestart = false;
+
+    @Expose
     @ConfigOption(name = "On Disconnect", desc = "Send the message when you disconnect from the server.")
     @ConfigEditorBoolean
     public boolean onDisconnect = true;

@@ -3,6 +3,7 @@ package be.hize.afknotifier
 import be.hize.afknotifier.AFKNotifier.Companion.MODID
 import be.hize.afknotifier.config.Features
 import be.hize.afknotifier.config.core.ConfigManager
+import be.hize.afknotifier.data.ChatManager
 import be.hize.afknotifier.data.Commands
 import be.hize.afknotifier.data.FixedRateTimerManager
 import be.hize.afknotifier.data.MinecraftData
@@ -43,6 +44,7 @@ class AFKNotifier {
         loadModule(MinecraftData())
         loadModule(ScoreboardData)
         loadModule(TabListData)
+        loadModule(ChatManager())
         loadModule(Notifier)
         loadModule(FixedRateTimerManager)
 

@@ -1,6 +1,8 @@
 package be.hize.afknotifier.features
 
 import be.hize.afknotifier.AFKNotifier
+import be.hize.afknotifier.data.ScoreboardData
+import be.hize.afknotifier.events.ChatEvent
 import be.hize.afknotifier.events.IslandChangeEvent
 import be.hize.afknotifier.events.SecondPassedEvent
 import be.hize.afknotifier.events.SkyblockJoinEvent
@@ -8,12 +10,17 @@ import be.hize.afknotifier.utils.DelayedRun
 import be.hize.afknotifier.utils.DiscordUtil
 import be.hize.afknotifier.utils.HypixelUtils
 import be.hize.afknotifier.utils.Logger
+import be.hize.afknotifier.utils.RegexUtil.matchFirst
+import be.hize.afknotifier.utils.RegexUtil.matchMatcher
 import be.hize.afknotifier.utils.SimpleTimeMark
+import be.hize.afknotifier.utils.TimeUtil.format
 import kotlinx.coroutines.launch
 import net.minecraft.client.Minecraft
+import net.minecraft.util.ChatComponentText
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 import net.minecraftforge.fml.common.network.FMLNetworkEvent.ClientConnectedToServerEvent
 import net.minecraftforge.fml.common.network.FMLNetworkEvent.ClientDisconnectionFromServerEvent
+import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
 object Notifier {
@@ -29,11 +36,28 @@ object Notifier {
     private var disconnected = false
     private var lastIslandChange = SimpleTimeMark.farPast()
 
+    private var lobbyRestarting = false
+    private var restartReason = ""
+    private var restartingIn = ""
+
+    private val restartingPattern = "§cServer closing: (?<minutes>\\d+):(?<seconds>\\d+) ?§8.*".toPattern()
+    private val rebootReasonPattern = "§c\\[Important] §r§eThis server will restart soon: §r§b(?<reason>.*)".toPattern()
+
     @SubscribeEvent
     fun onSecondPassed(event: SecondPassedEvent) {
         if (!isEnabled()) return
         if (!config.enabled) return
         if (HypixelUtils.inSkyblock) return
+
+        ScoreboardData.sidebarLinesFormatted.matchFirst(restartingPattern) {
+            val minutes = group("minutes").toInt().minutes
+            val seconds = group("seconds").toInt().seconds
+            val totalTime = minutes + seconds
+            if (totalTime > 2.minutes && totalTime.inWholeSeconds % 30 != 0L) return
+            lobbyRestarting = true
+            restartingIn = totalTime.format()
+        }
+
         if (messageSent) return
         if (!check) return
         if (lastIslandChange.passedSince() < 2.seconds) return
@@ -42,8 +66,7 @@ object Notifier {
         logger.log("You are not in skyblock!! §7(Try $tryNumber of ${config.retryValue})")
 
         if (tryNumber >= config.retryValue) {
-            val users = validateUserList(config.userTagList.get())
-            DiscordUtil.sendAfkWarning(config.lobbyMessage, users)
+            DiscordUtil.sendAfkWarning(config.lobbyMessage)
             logger.log("Sent message to discord.")
             tryNumber = 0
             messageSent = true
@@ -52,9 +75,30 @@ object Notifier {
     }
 
     @SubscribeEvent
+    fun onChat(event: ChatEvent) {
+        if (!isEnabled()) return
+        rebootReasonPattern.matchMatcher(event.message) {
+            lobbyRestarting = true
+            restartReason = group("reason")
+
+            if (config.messageWhenRestart) {
+                val text = buildString {
+                    append("Server is restarting")
+                    if (restartingIn.isNotEmpty()) {
+                        append(" in $restartingIn")
+                    }
+                    append(". Reason: $restartReason")
+                }
+                DiscordUtil.sendAfkWarning(text)
+            }
+        }
+    }
+
+    @SubscribeEvent
     fun onSkyblockJoin(event: SkyblockJoinEvent) {
         messageSent = false
         check = true
+        restartReason = ""
     }
 
     @SubscribeEvent
@@ -64,10 +108,8 @@ object Notifier {
         connected = false
         AFKNotifier.coroutineScope.launch {
             DelayedRun.runDelayed(5.seconds) {
-                println(connected)
                 if (!connected) {
-                    val users = validateUserList(config.userTagList.get())
-                    DiscordUtil.sendAfkWarning("%%user%% has disconnected.", users)
+                    DiscordUtil.sendAfkWarning("%%user%% has disconnected.")
                     logger.log("You have disconnected, sent the message to discord.")
                 }
             }
@@ -78,7 +120,6 @@ object Notifier {
     @SubscribeEvent
     fun onConnect(event: ClientConnectedToServerEvent) {
         if (!config.onDisconnect) return
-        println("connect")
         connected = true
         disconnected = false
     }
@@ -93,26 +134,29 @@ object Notifier {
         if (event.newIsland == config.islandType) {
             isCheck = true
             islandMessageSent = false
+            lobbyRestarting = false
         }
 
-        if (!config.onIslandChange) return
         if (islandMessageSent) return
         if (!isCheck) return
 
         val old = event.oldIsland
         if (old == config.islandType) {
-            val users = validateUserList(config.userTagList.get())
-            DiscordUtil.sendAfkWarning(config.islandLeaveMessage, users)
+            if (config.onlyOnLobbyRestart && !lobbyRestarting) return
+            DiscordUtil.sendAfkWarning(
+                config.islandLeaveMessage.replace("%%island%%", old.displayName.uppercase())
+            )
             logger.log("Private island leave message sent.")
             islandMessageSent = true
             isCheck = false
+            lobbyRestarting = false
         }
     }
 
-    private fun validateUserList(users: String): String? {
-        val list = users.split(",")
-        if (list.any { !it.matches("\\d+".toRegex()) }) return null
-        return list.joinToString(" ") { user -> "<@$user>" }
+    fun sendFakeMessage(args: Array<String>) {
+        val message = args.joinToString(" ").replace("&&", "§")
+        Minecraft.getMinecraft().thePlayer.addChatMessage(ChatComponentText(message))
+        ChatEvent(message, ChatComponentText(message)).postAndCatch()
     }
 
     private fun isEnabled() = Minecraft.getMinecraft().theWorld != null

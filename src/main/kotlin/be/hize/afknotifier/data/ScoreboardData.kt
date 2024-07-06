@@ -10,17 +10,18 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 
 object ScoreboardData {
     private var scoreboard = listOf<String>()
+    var sidebarLinesFormatted: List<String> = emptyList()
     var objectiveTitle = ""
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     fun onTick(event: ModTickEvent) {
         if (HypixelUtils.onHypixel) return
-        var list = fetchScoreboardLines().take(15)
-        list = formatLines(list)
+        val list = fetchScoreboardLines().reversed()
 
-        if (list != scoreboard) {
-            scoreboard = list
-            ScoreboardUpdateEvent(scoreboard.reversed()).postAndCatch()
+        val new = formatLines(list)
+        if (new != sidebarLinesFormatted) {
+            ScoreboardUpdateEvent(new).postAndCatch()
+            sidebarLinesFormatted = new
         }
     }
 

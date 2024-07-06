@@ -48,6 +48,7 @@ object HypixelUtils {
         val inSkyblock = checkScoreboard()
 
         if (inSkyblock && !skyblock) {
+            println("sb join event")
             SkyblockJoinEvent().postAndCatch()
         }
 

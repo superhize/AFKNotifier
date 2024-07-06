@@ -81,8 +81,9 @@ object DiscordUtil {
         }
     }
 
-    fun sendAfkWarning(msg: String, users: String?) {
+    fun sendAfkWarning(msg: String) {
         AFKNotifier.coroutineScope.launch(Dispatchers.IO) {
+            val users = validateUserList(config.userTagList.get())
             val username = Minecraft.getMinecraft().session.username
             val usersList = users ?: "Invalid users tag list."
             val message = """
@@ -91,5 +92,11 @@ object DiscordUtil {
             """.trimIndent()
             sendDiscordMessage(message)
         }
+    }
+
+    private fun validateUserList(users: String): String? {
+        val list = users.split(",")
+        if (list.any { !it.matches("\\d+".toRegex()) }) return null
+        return list.joinToString(" ") { user -> "<@$user>" }
     }
 }

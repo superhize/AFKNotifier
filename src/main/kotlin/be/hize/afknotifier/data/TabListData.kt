@@ -59,7 +59,7 @@ object TabListData {
         if (tablistCache != tabList) {
             tablistCache = tabList
             TabListUpdateEvent(getTabList()).postAndCatch()
-            if (!HypixelUtils.onHypixel){
+            if (!HypixelUtils.onHypixel) {
                 workaroundDelayedTabListUpdateAgain()
             }
         }
