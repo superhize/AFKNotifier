@@ -40,8 +40,11 @@ object Notifier {
     private var restartReason = ""
     private var restartingIn = ""
 
+    //private var hoppityCall = false
+
     private val restartingPattern = "§cServer closing: (?<minutes>\\d+):(?<seconds>\\d+) ?§8.*".toPattern()
     private val rebootReasonPattern = "§c\\[Important] §r§eThis server will restart soon: §r§b(?<reason>.*)".toPattern()
+    private val hoppityCallPattern = "§e✆ §aHoppity.*".toPattern()
 
     @SubscribeEvent
     fun onSecondPassed(event: SecondPassedEvent) {
@@ -90,6 +93,19 @@ object Notifier {
                     append(". Reason: $restartReason")
                 }
                 DiscordUtil.sendAfkWarning(text)
+            }
+        }
+    }
+
+    @SubscribeEvent
+    fun onHoppityCall(event: ChatEvent) {
+        if (!isEnabled()) return
+        hoppityCallPattern.matchMatcher(event.message) {
+            //hoppityCall = true
+                logger.log("Detected Hoppity Call")
+            if (config.hoppityCall) {
+                DiscordUtil.sendAfkWarning("Hoppity has called %%user%%")
+                logger.log("Sending Hoppity Call Notification")
             }
         }
     }

@@ -73,4 +73,9 @@ public class MainConfig {
     @ConfigOption(name = "Retry", desc = "Number of time you want to retry checking if you are still on skyblock before sending the message.")
     @ConfigEditorSlider(minValue = 5, maxValue = 10, minStep = 1)
     public int retryValue = 10;
+
+    @Expose
+    @ConfigOption(name = "Hoppity Call Notification", desc = "Will send a message when Hoppity calls.")
+    @ConfigEditorBoolean
+    public boolean hoppityCall = true;
 }
