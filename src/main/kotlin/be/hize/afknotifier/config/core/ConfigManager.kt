@@ -99,10 +99,10 @@ object ConfigManager {
     }
 
     fun saveConfig(reason: String) {
-        println("saveConfig: $reason")
+        //println("saveConfig: $reason")
         val file = configFile ?: throw Error("Can not save config, configFile is null!")
         try {
-            println("Saving config file")
+            //println("Saving config file")
             file.parentFile.mkdirs()
             val unit = file.parentFile.resolve("config.json.write")
             unit.createNewFile()
