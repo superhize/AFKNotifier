@@ -44,7 +44,7 @@ object Notifier {
 
     private val restartingPattern = "§cServer closing: (?<minutes>\\d+):(?<seconds>\\d+) ?§8.*".toPattern()
     private val rebootReasonPattern = "§c\\[Important] §r§eThis server will restart soon: §r§b(?<reason>.*)".toPattern()
-    private val hoppityCallPattern = "§e✆ §aHoppity.*".toPattern()
+    private val hoppityCallPattern = "§e✆ §r§aHoppity.*".toPattern()
 
     @SubscribeEvent
     fun onSecondPassed(event: SecondPassedEvent) {
