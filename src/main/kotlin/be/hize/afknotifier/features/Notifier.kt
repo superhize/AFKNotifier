@@ -40,8 +40,6 @@ object Notifier {
     private var restartReason = ""
     private var restartingIn = ""
 
-    //private var hoppityCall = false
-
     private val restartingPattern = "§cServer closing: (?<minutes>\\d+):(?<seconds>\\d+) ?§8.*".toPattern()
     private val rebootReasonPattern = "§c\\[Important] §r§eThis server will restart soon: §r§b(?<reason>.*)".toPattern()
     private val hoppityCallPattern = "§e✆ §r§aHoppity.*".toPattern()
@@ -101,8 +99,7 @@ object Notifier {
     fun onHoppityCall(event: ChatEvent) {
         if (!isEnabled()) return
         hoppityCallPattern.matchMatcher(event.message) {
-            //hoppityCall = true
-                logger.log("Detected Hoppity Call")
+            logger.log("Detected Hoppity Call")
             if (config.hoppityCall) {
                 DiscordUtil.sendAfkWarning("Hoppity has called %%user%%")
                 logger.log("Sending Hoppity Call Notification")
@@ -160,7 +157,7 @@ object Notifier {
         if (old == config.islandType) {
             if (config.onlyOnLobbyRestart && !lobbyRestarting) return
             DiscordUtil.sendAfkWarning(
-                config.islandLeaveMessage.replace("%%island%%", old.displayName.uppercase())
+                config.islandLeaveMessage.replace("%%island%%", old.displayName.uppercase()),
             )
             logger.log("Private island leave message sent.")
             islandMessageSent = true
